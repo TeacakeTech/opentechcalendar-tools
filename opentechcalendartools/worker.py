@@ -53,6 +53,7 @@ class Worker:
                 start = event.get("DTSTART")
                 end = event.get("DTEND")
                 if end.dt.timestamp() > datetime.datetime.now().timestamp():
+                    # Create event data with various fields
                     event_data = {
                         "title": str(event.get("SUMMARY")),
                         "group": group["id"],
@@ -62,6 +63,11 @@ class Worker:
                         "url": str(event.get("URL")),
                         "cancelled": (event.get("STATUS") == "CANCELLED"),
                         "imported": True,
+                        "community_participation": {
+                            "at_event": None,
+                            "at_event_audience_text": None,
+                            "at_event_audience_audio": None,
+                        },
                     }
                     if group["field_country"]:
                         event_data["country"] = group["field_country"]
@@ -71,14 +77,53 @@ class Worker:
                         event_data["code_of_conduct_url"] = group[
                             "field_code_of_conduct_url"
                         ]
-                    if group["field_in_person"] == "always":
+                    # In-person events
+                    if group["field_in_person"] == "all":
                         event_data["in_person"] = "yes"
-                    elif group["field_in_person"] == "never":
+                    elif group["field_in_person"] == "none":
                         event_data["in_person"] = "no"
+                    # Community Participation: Interact with event?
+                    if group["field_community_participation_at_event"] == "all":
+                        event_data["community_participation"]["at_event"] = "yes"
+                    elif group["field_community_participation_at_event"] == "none":
+                        event_data["community_participation"]["at_event"] = "no"
+                    # Community Participation: Interact with other audience members at the event via text?
+                    if (
+                        group["field_community_participation_at_event_audience_text"]
+                        == "all"
+                    ):
+                        event_data["community_participation"][
+                            "at_event_audience_text"
+                        ] = "yes"
+                    elif (
+                        group["field_community_participation_at_event_audience_text"]
+                        == "none"
+                    ):
+                        event_data["community_participation"][
+                            "at_event_audience_text"
+                        ] = "no"
+                    # Community Participation: Interact with other audience members at the event via audio?
+                    if (
+                        group["field_community_participation_at_event_audience_audio"]
+                        == "all"
+                    ):
+                        event_data["community_participation"][
+                            "at_event_audience_audio"
+                        ] = "yes"
+                    elif (
+                        group["field_community_participation_at_event_audience_audio"]
+                        == "none"
+                    ):
+                        event_data["community_participation"][
+                            "at_event_audience_audio"
+                        ] = "no"
+                    # Id
                     id = event.get("UID").split("@").pop(0)
+                    # filename
                     filename = os.path.join(
                         self._data_dir, "event", group["id"], id + ".md"
                     )
+                    # Finally write data
                     with open(filename, "w") as fp:
                         fp.write("---\n")
                         fp.write(yaml.dump(event_data))
