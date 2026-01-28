@@ -2,6 +2,7 @@ import datetime
 import os
 import sqlite3
 import tempfile
+import zoneinfo
 
 import icalendar
 import requests
@@ -48,16 +49,49 @@ class Worker:
         with open(ical_filename) as fp:
             calendar = icalendar.Calendar.from_ical(fp.read())
             for event in calendar.events:
-                start = event.get("DTSTART")
-                end = event.get("DTEND")
-                if end.dt.timestamp() > datetime.datetime.now().timestamp():
+                timezone_name = group["field_timezone"] or "UTC"
+                start_datetime = event.get("DTSTART").dt
+                end_datetime = event.get("DTEND").dt
+                if isinstance(start_datetime, datetime.datetime):
+                    pass
+                elif isinstance(start_datetime, datetime.date):
+                    start_datetime = datetime.datetime(
+                        start_datetime.year,
+                        start_datetime.month,
+                        start_datetime.day,
+                        0,
+                        0,
+                        0,
+                        tzinfo=zoneinfo.ZoneInfo(timezone_name),
+                    )
+                else:
+                    raise Exception(
+                        "Start not in the format we expect {}".format(start_datetime)
+                    )
+                if isinstance(end_datetime, datetime.datetime):
+                    pass
+                elif isinstance(end_datetime, datetime.date):
+                    end_datetime = datetime.datetime(
+                        end_datetime.year,
+                        end_datetime.month,
+                        end_datetime.day,
+                        23,
+                        59,
+                        59,
+                        tzinfo=zoneinfo.ZoneInfo(timezone_name),
+                    )
+                else:
+                    raise Exception(
+                        "End not in the format we expect {}".format(end_datetime)
+                    )
+                if end_datetime.timestamp() > datetime.datetime.now().timestamp():
                     # Create event data with various fields
                     event_data = {
                         "title": str(event.get("SUMMARY")),
                         "group": group["id"],
-                        "timezone": group["field_timezone"] or "UTC",
-                        "start_at": str(start.dt),
-                        "end_at": str(end.dt),
+                        "timezone": timezone_name,
+                        "start_at": str(start_datetime),
+                        "end_at": str(end_datetime),
                         "url": str(event.get("URL")),
                         "cancelled": (event.get("STATUS") == "CANCELLED"),
                         "imported": True,
