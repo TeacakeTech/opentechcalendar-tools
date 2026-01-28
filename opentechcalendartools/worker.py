@@ -96,10 +96,11 @@ class Worker:
                         "cancelled": (event.get("STATUS") == "CANCELLED"),
                         "imported": True,
                         "community_participation": {
-                            "at_event": None,
-                            "at_event_audience_text": None,
-                            "at_event_audience_audio": None,
+                            "at_event": "unknown",
+                            "at_event_audience_text": "unknown",
+                            "at_event_audience_audio": "unknown",
                         },
+                        "in_person": "unknown",
                     }
                     if group["field_country"]:
                         event_data["country"] = group["field_country"]
