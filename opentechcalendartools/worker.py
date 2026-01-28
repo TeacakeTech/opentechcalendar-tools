@@ -43,9 +43,7 @@ class Worker:
         os.close(new_filename_dets[0])
         return new_filename_dets[1]
 
-    def _import_group_type_ical(
-        self, group, ical_filename, group_country=None, group_place=None
-    ):
+    def _import_group_type_ical(self, group, ical_filename):
         os.makedirs(os.path.join(self._data_dir, "event", group["id"]), exist_ok=True)
         with open(ical_filename) as fp:
             calendar = icalendar.Calendar.from_ical(fp.read())
