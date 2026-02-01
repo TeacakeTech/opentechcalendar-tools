@@ -16,6 +16,7 @@ setuptools.setup(
     install_requires=[
         "datatig",
         "requests",
+        "requests-cache",
         "icalendar",
         "pyyaml",
     ],

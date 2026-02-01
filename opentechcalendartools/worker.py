@@ -11,9 +11,10 @@ import yaml
 
 class Worker:
 
-    def __init__(self, sqlite_database_filename):
+    def __init__(self, sqlite_database_filename, requests_session=None):
         self._sqlite_database_filename = sqlite_database_filename
         self._data_dir = os.getcwd()
+        self._requests_session = requests_session or requests.Session()
 
     def get_group_ids_to_import(self) -> list:
         with sqlite3.connect(self._sqlite_database_filename) as connection:
@@ -35,7 +36,7 @@ class Worker:
                 )
 
     def _download_file_to_temp(self, url) -> str:
-        r = requests.get(url)
+        r = self._requests_session.get(url)
         r.raise_for_status()
         new_filename_dets = tempfile.mkstemp(
             suffix="opentechcalendartools_",

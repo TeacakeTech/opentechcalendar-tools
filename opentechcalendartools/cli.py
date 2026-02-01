@@ -1,6 +1,8 @@
 import argparse
 import os
 
+import requests_cache
+
 from .worker import Worker
 
 
@@ -28,13 +30,20 @@ def main():
 
     args = parser.parse_args()
 
+    requests_session = None
+    requests_cache_directory = os.getenv(
+        "OPEN_TECH_CALENDAR_TOOLS_REQUEST_CACHE_DIRECTORY",
+    )
+    if requests_cache_directory:
+        requests_session = requests_cache.install_cache(requests_cache_directory)
+
+    worker = Worker(sqlite_database_filename, requests_session=requests_session)
+
     if args.subparser_name == "listgroupstoimport":
         # List groups to import
-        worker = Worker(sqlite_database_filename)
         for group_id in worker.get_group_ids_to_import():
             print(group_id)
 
     elif args.subparser_name == "importgroup":
         # Import Group
-        worker = Worker(sqlite_database_filename)
         worker.import_group(args.group_id)
