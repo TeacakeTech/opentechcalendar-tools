@@ -11,6 +11,10 @@ import yaml
 
 class Worker:
 
+    WORKER_USER_AGENT = (
+        "Open Tech Calendar Tools https://opentechcalendar.co.uk/contact"
+    )
+
     def __init__(self, sqlite_database_filename, requests_session=None):
         self._sqlite_database_filename = sqlite_database_filename
         self._data_dir = os.getcwd()
@@ -36,7 +40,10 @@ class Worker:
                 )
 
     def _download_file_to_temp(self, url) -> str:
-        r = self._requests_session.get(url)
+        r = self._requests_session.get(
+            url,
+            headers={"User-Agent": Worker.WORKER_USER_AGENT},
+        )
         r.raise_for_status()
         new_filename_dets = tempfile.mkstemp(
             suffix="opentechcalendartools_",
