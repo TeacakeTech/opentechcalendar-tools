@@ -52,6 +52,20 @@ class Worker:
         os.close(new_filename_dets[0])
         return new_filename_dets[1]
 
+    def _should_import_event(
+        self, group: dict, title: str, description: str, end: datetime.datetime
+    ) -> bool:
+        if end.timestamp() < datetime.datetime.now().timestamp():
+            return False
+
+        if group["field_import_exclude"] and (
+            group["field_import_exclude"] in title
+            or group["field_import_exclude"] in description
+        ):
+            return False
+
+        return True
+
     def _import_group_type_ical(self, group, ical_filename):
         os.makedirs(os.path.join(self._data_dir, "event", group["id"]), exist_ok=True)
         with open(ical_filename) as fp:
@@ -92,7 +106,12 @@ class Worker:
                     raise Exception(
                         "End not in the format we expect {}".format(end_datetime)
                     )
-                if end_datetime.timestamp() > datetime.datetime.now().timestamp():
+                if self._should_import_event(
+                    group,
+                    str(event.get("SUMMARY")),
+                    str(event.get("DESCRIPTION")),
+                    end_datetime,
+                ):
                     # Create event data with various fields
                     event_data = {
                         "title": str(event.get("SUMMARY")),
