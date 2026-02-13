@@ -55,15 +55,22 @@ class Worker:
     def _should_import_event(
         self, group: dict, title: str, description: str, end: datetime.datetime
     ) -> bool:
+        # Has event passed?
         if end.timestamp() < datetime.datetime.now().timestamp():
             return False
 
-        if group["field_import_exclude"] and (
-            group["field_import_exclude"] in title
-            or group["field_import_exclude"] in description
-        ):
-            return False
+        # Check Excludes
+        with sqlite3.connect(self._sqlite_database_filename) as connection:
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            for row in cursor.execute(
+                "SELECT * FROM record_group___field_import_exclude WHERE record_id=?",
+                [group["id"]],
+            ):
+                if row["value"] in title or row["value"] in description:
+                    return False
 
+        # Ok, have checked all possibilities, so ....
         return True
 
     def _import_group_type_ical(self, group, ical_filename):
