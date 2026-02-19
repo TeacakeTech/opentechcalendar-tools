@@ -1,7 +1,6 @@
 import argparse
-import os
 
-import requests_cache
+from opentechcalendartools.settings import Settings
 
 from .worker import Worker
 
@@ -9,10 +8,8 @@ from .worker import Worker
 def main():
 
     # First we process the data files into a SQLite database for us to use
-    sqlite_database_filename = os.getenv(
-        "OPEN_TECH_CALENDAR_TOOLS_SQLITE_DATABASE_FILENAME"
-    )
-    if not sqlite_database_filename:
+    settings = Settings()
+    if not settings.SQLITE_DATABASE_FILENAME:
         raise Exception(
             "Must specify OPEN_TECH_CALENDAR_TOOLS_SQLITE_DATABASE_FILENAME env var"
         )
@@ -30,14 +27,7 @@ def main():
 
     args = parser.parse_args()
 
-    requests_session = None
-    requests_cache_directory = os.getenv(
-        "OPEN_TECH_CALENDAR_TOOLS_REQUEST_CACHE_DIRECTORY",
-    )
-    if requests_cache_directory:
-        requests_session = requests_cache.install_cache(requests_cache_directory)
-
-    worker = Worker(sqlite_database_filename, requests_session=requests_session)
+    worker = Worker(settings)
 
     if args.subparser_name == "listgroupstoimport":
         # List groups to import

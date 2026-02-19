@@ -19,6 +19,7 @@ setuptools.setup(
         "requests-cache",
         "icalendar",
         "pyyaml",
+        "beautifulsoup4",
     ],
     extras_require={
         "dev": [
