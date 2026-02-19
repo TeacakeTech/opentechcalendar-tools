@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="opentechcalendartools",
-    version="0.4.0",
+    version="0.5.0",
     description="",
     url="https://github.com/TeacakeTech/opentechcalendar-tools",
     project_urls={
