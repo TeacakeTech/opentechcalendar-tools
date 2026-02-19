@@ -39,7 +39,7 @@ class ImportEventbriteOrganisation(ImportBase):
                     event_jsonld_data["item"]["startDate"]
                 )
                 end_datetime = datetime.datetime.fromisoformat(
-                    event_jsonld_data["item"]["startDate"]
+                    event_jsonld_data["item"]["endDate"]
                 )
                 if self._should_import_event(
                     group,
