@@ -59,8 +59,8 @@ class Worker:
         if end.timestamp() < datetime.datetime.now().timestamp():
             return False
 
-        # Check Excludes
         with sqlite3.connect(self._sqlite_database_filename) as connection:
+            # Check Excludes
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
             for row in cursor.execute(
@@ -70,7 +70,20 @@ class Worker:
                 if row["value"] in title or row["value"] in description:
                     return False
 
-        # Ok, have checked all possibilities, so ....
+            # Check includes
+            any_includes = False
+            for row in cursor.execute(
+                "SELECT * FROM record_group___field_import_include WHERE record_id=?",
+                [group["id"]],
+            ):
+                if row["value"] in title or row["value"] in description:
+                    return True
+                any_includes = True
+            # If there were include values set but none of them matched then ...
+            if any_includes:
+                return False
+
+        # Ok, have checked the excludes and there were no includes to check, so default to ....
         return True
 
     def _import_group_type_ical(self, group, ical_filename):
