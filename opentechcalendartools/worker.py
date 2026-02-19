@@ -139,7 +139,7 @@ class Worker:
                         "timezone": timezone_name,
                         "start_at": str(start_datetime),
                         "end_at": str(end_datetime),
-                        "url": str(event.get("URL")),
+                        "url": str(event.get("URL", "")) or group["field_url"],
                         "cancelled": (event.get("STATUS") == "CANCELLED"),
                         "imported": True,
                         "community_participation": {
