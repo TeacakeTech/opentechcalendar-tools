@@ -22,7 +22,12 @@ class ImportEventbriteOrganisation(ImportBase):
                 json.loads(s.string)  # type: ignore
                 for s in soup.find_all("script", attrs={"type": "application/ld+json"})
             ]
+            if not datas:
+                return
+
             datas = [d for d in datas if isinstance(d.get("itemListElement"), list)]
+            if not datas:
+                return
 
             for event_jsonld_data in datas[0]["itemListElement"]:
                 if event_jsonld_data["@type"] != "ListItem":
